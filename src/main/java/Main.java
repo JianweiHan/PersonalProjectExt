@@ -143,7 +143,7 @@ public class Main {
         /**
          * test if interfaceNames isEmpty?
          */
-        System.out.println(usejavaparser.interfaceNames.isEmpty());
+        //System.out.println(usejavaparser.interfaceNames.isEmpty());
 
     }
 }

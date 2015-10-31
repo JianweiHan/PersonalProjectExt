@@ -18,6 +18,7 @@ public class UseJavaParser {
     static List<AssociationItem> associationItemMap;  //find association and multiplicity
     static List<ExtendItem> extendItemList; //save all the extend relationship
     static Set<UseInterfaceItem> useInterfaceList; //find ball and socket interface
+    static List<AssociateInterfaceItem> associateInterfaceList; //find ball and socket interface
     static List<ImplementInterfaceItem> implementInterfaceList;
 
 
@@ -59,6 +60,12 @@ public class UseJavaParser {
                 return false;
             }
         }
+    }
+    class AssociateInterfaceItem{
+        String interfaceName;
+        String associateName;
+        String attributeName;
+        boolean ifMultiple;
     }
     class ImplementInterfaceItem {
         String interfaceName;
@@ -104,6 +111,7 @@ public class UseJavaParser {
         associationItemMap = new ArrayList<AssociationItem>();
         extendItemList = new ArrayList<ExtendItem>();
         useInterfaceList = new LinkedHashSet<UseInterfaceItem>();
+        associateInterfaceList = new ArrayList<AssociateInterfaceItem>();
         implementInterfaceList = new ArrayList<ImplementInterfaceItem>();
 
         classStrUML = new ArrayList<String>();
@@ -148,7 +156,7 @@ public class UseJavaParser {
             modifierClassVisitor = n.getModifiers();
 
             //print class name
-            System.out.println("Class name is: " + n.getName());
+            //System.out.println("Class name is: " + n.getName());
             /*
             System.out.println(n.getEndLine());
             if(n.isInterface())
@@ -286,6 +294,26 @@ public class UseJavaParser {
                     associationItem.ifMultiple=false;
 
                 associationItemMap.add(associationItem);
+            }
+            // if  field has association with an interface, put it into associateInterfaceList
+            else if (interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0) {
+                AssociateInterfaceItem associateInterfaceItem = new AssociateInterfaceItem();
+                associateInterfaceItem.associateName = nameClassVisitor;
+
+                if(substr1!="")
+                    associateInterfaceItem.interfaceName=substr1;
+                else
+                    associateInterfaceItem.interfaceName=typeFieldVisitor.get(index);
+
+                associateInterfaceItem.attributeName=field;
+
+                if(substr1!="")
+                    associateInterfaceItem.ifMultiple=true;
+                else
+                    associateInterfaceItem.ifMultiple=false;
+
+                associateInterfaceList.add(associateInterfaceItem);
+
             }
 //            // if collection is interface, make it like use relationship
 //            else if (interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0) {
@@ -485,7 +513,7 @@ public class UseJavaParser {
             }
         }
         //print class string for UML
-        System.out.print(source);
+       // System.out.print(source);
 
         classStrUML.add(source);
     }
@@ -561,10 +589,14 @@ public class UseJavaParser {
         int usecase1 = 0;
         int usecase2 = 1;
 
+
+
         while(!implementInterfaceList.isEmpty()){
             String interfaceName=implementInterfaceList.get(0).interfaceName;
             List<String> implementList=new ArrayList<String>();
             List<String> useList=new ArrayList<String>();
+            List<String> associateList=new ArrayList<String>();
+            List<Boolean> ifMulipleList=new ArrayList<Boolean>();
 
             int index = 0;
             while(index<implementInterfaceList.size()) {
@@ -594,25 +626,50 @@ public class UseJavaParser {
                 }
             }
 
+            index = 0;
+            while(index<associateInterfaceList.size()){
+                for(AssociateInterfaceItem associItem:associateInterfaceList){
+                    index++;
+                    if(associItem.interfaceName.equals(interfaceName)) {
+                        associateList.add(associItem.associateName);
+                        if(associItem.ifMultiple) {
+                            ifMulipleList.add(true);
+                        }
+                        else {
+                            ifMulipleList.add(false);
+                        }
+                        associateInterfaceList.remove(associItem);
+                        index=0;
+                        break;
+                    }
+                }
+            }
 
+            int socketSize= useList.size()+associateList.size();
 
-            if(implementList.size()==1 && useList.size()==0) {
+            if(implementList.size()==1 && socketSize==0) {
                 source += interfaceName + "()-" + implementList.get(0)  +"\n";
             }
 
-            else if(implementList.size()==1 && useList.size()==1) {
+            else if(implementList.size()==1 && socketSize==1 && useList.size()==1) {
                 source += implementList.get(0) + "-0)-" + useList.get(0) + ":`"+ interfaceName +"\n";
             }
 
-            else if(implementList.size()==1 && useList.size() > 1) {
+            else if(implementList.size()==1 && ((socketSize == 1 && useList.size()==0) || socketSize>1)) {
                 source +="mix_usecase " + usecase1 + "\n";
                 source += implementList.get(0) + "-0)- " + usecase1 +  ":`"+ interfaceName +"\n";
                 for(String useName: useList) {
                     source += usecase1 + " -- " + useName + ":use\n";
                 }
+                for(int i=0;i<associateList.size();i++) {
+                    if(ifMulipleList.get(i))
+                        source += usecase1 + " \"*\" " + " -- " + associateList.get(i) + "\n";
+                    else
+                        source += usecase1 +  " \"1\" "+ "  -- " + associateList.get(i) + "\n";
+                }
             }
 
-            else if(implementList.size() > 1 && useList.size()==0) {
+            else if(implementList.size() > 1 && socketSize==0) {
                 source +="mix_usecase "+ usecase1 +"\n";
                 source += interfaceName + "()- "+ usecase1 + "\n";
                 for(String implementName:implementList) {
@@ -620,7 +677,7 @@ public class UseJavaParser {
                 }
             }
 
-            else if(implementList.size() > 1 && useList.size() == 1) {
+            else if(implementList.size() > 1 && socketSize == 1 && useList.size()==1) {
                 source +="mix_usecase "+ usecase1 +"\n";
                 source +=usecase1 + " -0)-" + useList.get(0) + ":`"+ interfaceName +"\n";
                 for(String implementName:implementList) {
@@ -628,7 +685,7 @@ public class UseJavaParser {
                 }
             }
 
-            else if(implementList.size() > 1 && useList.size() > 1) {
+            else if(implementList.size() > 1 && ((socketSize == 1 && useList.size()==0) || socketSize>1)) {
                 source +="mix_usecase "+ usecase1+ "\n";
                 source +="mix_usecase "+ usecase2+ "\n";
                 source += usecase1 + " -0)- "+ usecase2 +  ":`"+ interfaceName +"\n";
@@ -639,6 +696,12 @@ public class UseJavaParser {
 
                 for(String useName: useList) {
                     source +=usecase2 + " -- " + useName + ":use\n";
+                }
+                for(int i=0;i<associateList.size();i++) {
+                    if(ifMulipleList.get(i))
+                        source += usecase2 + " \"*\" " + "-- " + associateList.get(i) + "\n";
+                    else
+                        source += usecase2 +  " \"1\" "+ "-- " + associateList.get(i) + "\n";
                 }
             }
 
