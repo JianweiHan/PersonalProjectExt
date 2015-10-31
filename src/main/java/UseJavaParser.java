@@ -295,6 +295,7 @@ public class UseJavaParser {
 
                 associationItemMap.add(associationItem);
             }
+<<<<<<< HEAD
             // if  field has association with an interface, put it into associateInterfaceList
             else if (interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0) {
                 AssociateInterfaceItem associateInterfaceItem = new AssociateInterfaceItem();
@@ -327,6 +328,20 @@ public class UseJavaParser {
 //                if(classNames.contains(nameClassVisitor))
 //                    useInterfaceList.add(useInterfaceItem);
 //            }
+=======
+            // if collection is interface, make it like use relationship
+            else if (interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0) {
+                UseInterfaceItem useInterfaceItem = new UseInterfaceItem();
+                if(interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 )
+                    useInterfaceItem.interfaceName = typeFieldVisitor.get(index);
+                else
+                    useInterfaceItem.interfaceName = substr1;
+                useInterfaceItem.useName = nameClassVisitor;
+
+                if(classNames.contains(nameClassVisitor))
+                    useInterfaceList.add(useInterfaceItem);
+            }
+>>>>>>> parent of a62fee1... An_interface_attribute_is_use
             else{
 
 
@@ -492,16 +507,7 @@ public class UseJavaParser {
         //D. find if any use of interface inside a method
         for(String innervarType: innerAttributeTypes){
             for(String interfaceName:interfaceNames) {
-                String fieldName=innervarType;
-
-                if(innervarType.indexOf('[')>=0) {
-                    fieldName = innervarType.substring(0, innervarType.indexOf('['));
-                }
-                else if(innervarType.contains("Collection") || innervarType.contains("List") || innervarType.contains("Map") ||innervarType.contains("Set") ) {
-                    fieldName = innervarType.substring(innervarType.indexOf('<')+1,innervarType.indexOf('>'));
-                }
-
-                if (interfaceName.equals(fieldName)) {
+                if (interfaceName.equals(innervarType)) {
                     UseInterfaceItem useInterfaceItem = new UseInterfaceItem();
                     useInterfaceItem.interfaceName = interfaceName;
                     useInterfaceItem.useName = nameClassVisitor;
