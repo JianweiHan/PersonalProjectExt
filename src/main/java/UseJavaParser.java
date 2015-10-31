@@ -296,6 +296,7 @@ public class UseJavaParser {
                 associationItemMap.add(associationItem);
             }
 <<<<<<< HEAD
+<<<<<<< HEAD
             // if  field has association with an interface, put it into associateInterfaceList
             else if (interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0) {
                 AssociateInterfaceItem associateInterfaceItem = new AssociateInterfaceItem();
@@ -329,6 +330,8 @@ public class UseJavaParser {
 //                    useInterfaceList.add(useInterfaceItem);
 //            }
 =======
+=======
+>>>>>>> parent of a62fee1... An_interface_attribute_is_use
             // if collection is interface, make it like use relationship
             else if (interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0) {
                 UseInterfaceItem useInterfaceItem = new UseInterfaceItem();
@@ -341,6 +344,9 @@ public class UseJavaParser {
                 if(classNames.contains(nameClassVisitor))
                     useInterfaceList.add(useInterfaceItem);
             }
+<<<<<<< HEAD
+>>>>>>> parent of a62fee1... An_interface_attribute_is_use
+=======
 >>>>>>> parent of a62fee1... An_interface_attribute_is_use
             else{
 
